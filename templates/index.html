@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lies of J</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <h1>Lies of J</h1>
-    <form method="POST" action="/">
-        <input type="text" name="username" placeholder="Denunciante" required>
+    <form method="POST" action="/" id="messageForm">
+        <input type="text" id="username" name="username" placeholder="Denunciante"> 
         <input type="text" name="message" placeholder="Qual mentira o Jordan te contou hoje???" required>
         <button type="submit">Send</button>
     </form>
@@ -27,5 +31,14 @@
         {% endfor %}
     </div>
 
+    <script>
+        document.getElementById('messageForm').addEventListener('submit', function(event) {
+            var usernameInput = document.getElementById('username');
+            if (usernameInput.value.trim() === '') {
+                usernameInput.value = 'anon';
+            }
+        });
+    </script>
 </body>
+
 </html>
