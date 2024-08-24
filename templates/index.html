@@ -3,24 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Message Board</title>
+    <title>Lies of J</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <h1>Lies of J</h1>
-        <form method="POST" action="/">
-            <input type="text" name="message" placeholder="Qual mentira o Jordan te contou hoje???" required>
-            <input type="text" name="username" placeholder="Denunciante" required>
-            <button type="submit">Send</button>
-        </form>
-        <div class="messages">
-            {% for msg in messages %}
-                <div class="message">
-                    {{ msg.text }}
-                    <div class="timestamp">{{ msg.timestamp }}</div>
-                    <div class="username">{{ msg.username }}</div>
-                </div>
-            {% endfor %}
+    <form method="POST" action="/">
+        <input type="text" name="username" placeholder="Denunciante" required>
+        <input type="text" name="message" placeholder="Qual mentira o Jordan te contou hoje???" required>
+        <button type="submit">Send</button>
+    </form>
+    <div class="messages">
+        {% for msg in messages|reverse %}
+        <div class="message">
+            <div class="message-header">
+                <span class="username">{{ msg.username }}</span>
+                <span class="timestamp">{{ msg.timestamp }}</span>
+            </div>
+            <div class="message-content">
+                {{ msg.text }}
+            </div>
         </div>
+        {% endfor %}
+    </div>
+
 </body>
 </html>

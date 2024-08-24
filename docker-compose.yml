@@ -7,6 +7,7 @@ services:
       - ./data:/app/data  # Mounts a local directory to store messages
       - ./templates:/app/templates  # Mounts the templates directory
       - ./static:/app/static  # Mounts the static directory
+      - ./static:/app/static  # Mounts the static directory
     ports:
       - "5000:5000"
     environment:

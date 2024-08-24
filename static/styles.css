@@ -6,14 +6,16 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    height: 80vh;
     margin: 0;
     padding: 20px;
 }
+
 h1 {
     font-size: 2.5rem;
     margin-bottom: 20px;
 }
+
 form {
     display: flex;
     flex-direction: column;
@@ -22,7 +24,6 @@ form {
     max-width: 400px;
     margin-bottom: 30px;
 }
-
 
 input[type="text"] {
     width: 100%;
@@ -46,7 +47,6 @@ button {
     transition: background-color 0.3s;
 }
 
-
 button:hover {
     background-color: #3700b3;
 }
@@ -69,12 +69,24 @@ button:hover {
     padding: 10px;
 }
 
-.timestamp {
-    font-size: 0.8em;
-    color: #888;
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
 }
+
 .username {
     font-size: 0.8em;
     color: #888;
     font-weight: bold;
+}
+
+.timestamp {
+    font-size: 0.8em;
+    color: #888;
+}
+
+.message-content {
+    font-size: 1rem;
+    color: #e0e0e0;
 }
