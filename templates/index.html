@@ -13,11 +13,12 @@
 <body>
     <h1>Lies of J</h1>
     <form method="POST" action="/" id="messageForm">
-        <input type="text" id="username" name="username" placeholder="Denunciante"> 
-        <input type="text" name="message" placeholder="Qual mentira o Jordan te contou hoje???" required>
+        <input type="text" id="username" name="username" placeholder="Denunciante">
+        <input type="text" id="message" name="message" placeholder="Qual mentira o Jordan te contou hoje???" required>
         <button type="submit">Send</button>
     </form>
-    <div class="messages">
+    <div id="onlineUsers" class="online-users">Online Users: 0</div> <!-- Moved online users count -->
+    <div class="messages" id="messages">
         {% for msg in messages|reverse %}
         <div class="message">
             <div class="message-header">
@@ -31,14 +32,46 @@
         {% endfor %}
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
     <script>
-        document.getElementById('messageForm').addEventListener('submit', function(event) {
+        var socket = io();
+
+        // Set username to "anon" if the user leaves it empty
+        document.getElementById('messageForm').addEventListener('submit', function(e) {
+            e.preventDefault();
             var usernameInput = document.getElementById('username');
+            var messageInput = document.getElementById('message');
             if (usernameInput.value.trim() === '') {
                 usernameInput.value = 'anon';
             }
+            socket.emit('new_message', {
+                message: messageInput.value,
+                username: usernameInput.value
+            });
+            messageInput.value = ''; // Clear the message input after sending
+        });
+
+        // Listen for new messages from the server
+        socket.on('message_update', function(msg) {
+            var messagesDiv = document.getElementById('messages');
+            var newMessageDiv = document.createElement('div');
+            newMessageDiv.className = 'message';
+            newMessageDiv.innerHTML = `
+                <div class="message-header">
+                    <span class="username">${msg.username}</span>
+                    <span class="timestamp">${msg.timestamp}</span>
+                </div>
+                <div class="message-content">
+                    ${msg.text}
+                </div>`;
+            messagesDiv.insertBefore(newMessageDiv, messagesDiv.firstChild);
+        });
+        // Update online users count
+        socket.on('update_user_count', function(count) {
+            document.getElementById('onlineUsers').textContent = `Fiscais verificando: ${count}`;
         });
     </script>
 </body>
+
 
 </html>
