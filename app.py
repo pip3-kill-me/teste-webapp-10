@@ -3,11 +3,12 @@ from flask_socketio import SocketIO, emit
 from datetime import datetime
 import os
 import json
-from PIL import Image
+from PIL import Image, ImageSequence
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 online_users = 0
+
 
 # File where messages will be stored
 MESSAGE_FILE = 'data/messages.json'
@@ -22,6 +23,7 @@ def load_messages():
             return json.load(file)
     return []
 
+
 # Function to save messages to the file
 def save_messages(messages):
     if not os.path.exists('data'):
@@ -29,14 +31,36 @@ def save_messages(messages):
     with open(MESSAGE_FILE, 'w') as file:
         json.dump(messages, file)
 
+
 # Load messages when the app starts
 messages = load_messages()
+
 
 # Function to compress and resize image
 def compress_and_resize_image(image_path, max_size=(512, 512), quality=10):
     with Image.open(image_path) as img:
-        img.thumbnail(max_size)
-        img.save(image_path, quality=quality, optimize=True)
+        if img.format in ['GIF', 'WEBP'] and getattr(img, "is_animated", False):
+            frames = []
+            for frame in ImageSequence.Iterator(img):
+                frame = frame.copy()
+                frame.thumbnail(max_size)
+                frames.append(frame)
+
+            # Save animated GIF or WebP
+            if img.format == 'WEBP':
+                frames[0].save(
+                    image_path, save_all=True, append_images=frames[1:], optimize=True, quality=quality
+                )
+            else:
+                frames[0].save(
+                    image_path, save_all=True, append_images=frames[1:], optimize=True, quality=quality
+                )
+        else:
+            # For non-animated GIFs, WebPs, and other formats
+            img.thumbnail(max_size)
+            img.save(image_path, quality=quality, optimize=True)
+
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -65,18 +89,21 @@ def index():
         socketio.emit('message_update', message_data)
 
     return render_template('index.html', messages=messages)
+
+
 @socketio.on('connect')
 def handle_connect():
     global online_users
     online_users += 1
     emit('update_user_count', online_users, broadcast=True)
 
-@socketio.on('disconnect')
 
+@socketio.on('disconnect')
 def handle_disconnect():
     global online_users
     online_users -= 1
     emit('update_user_count', online_users, broadcast=True)
+
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
