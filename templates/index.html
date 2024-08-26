@@ -12,13 +12,14 @@
 </head>
 <body>
     <h1>Lies of J</h1>
-    <form method="POST" action="/" id="messageForm">
+    <form id="messageForm" method="POST" action="/" enctype="multipart/form-data">
         <input type="text" id="username" name="username" placeholder="Denunciante">
         <input type="text" id="message" name="message" placeholder="Qual mentira o Jordan te contou hoje???" required>
+        <input type="file" name="image">
         <button type="submit">Send</button>
     </form>
     <div id="onlineUsers" class="online-users">Online Users: 0</div> <!-- Moved online users count -->
-    <div class="messages" id="messages">
+    <div id="messages" class="messages">
         {% for msg in messages|reverse %}
         <div class="message">
             <div class="message-header">
@@ -27,6 +28,11 @@
             </div>
             <div class="message-content">
                 {{ msg.text }}
+                {% if msg.image %}
+                <div class="message-image">
+                    <img src="{{ msg.image }}" alt="Uploaded image">
+                </div>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -36,7 +42,7 @@
     <script>
         var socket = io();
 
-        // Set username to "anon" if the user leaves it empty
+        // Handle form submission
         document.getElementById('messageForm').addEventListener('submit', function(e) {
             e.preventDefault();
             var usernameInput = document.getElementById('username');
@@ -44,11 +50,21 @@
             if (usernameInput.value.trim() === '') {
                 usernameInput.value = 'anon';
             }
-            socket.emit('new_message', {
-                message: messageInput.value,
-                username: usernameInput.value
-            });
-            messageInput.value = ''; // Clear the message input after sending
+
+            // Create a FormData object to handle file uploads
+            var formData = new FormData(this);
+
+            // Send the data using a Fetch API request
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  socket.emit('new_message', data);
+                  messageInput.value = ''; // Clear the message input after sending
+              }).catch(error => {
+                  console.error('Error:', error);
+              });
         });
 
         // Listen for new messages from the server
@@ -63,15 +79,18 @@
                 </div>
                 <div class="message-content">
                     ${msg.text}
+                    ${msg.image ? `<div class="message-image"><img src="${msg.image}" alt="Uploaded image"></div>` : ''}
                 </div>`;
             messagesDiv.insertBefore(newMessageDiv, messagesDiv.firstChild);
         });
+
         // Update online users count
         socket.on('update_user_count', function(count) {
             document.getElementById('onlineUsers').textContent = `Fiscais verificando: ${count}`;
         });
     </script>
 </body>
+
 
 
 </html>
